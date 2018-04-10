@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 char itochar(char i)
 {
@@ -84,10 +85,23 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    FILE *fp = fopen(argv[1], "r");
-    unsigned long long fl, n;
-    char *contents = NULL;
-    unsigned char *converted_contents = NULL;
+    FILE *fp = NULL; 
+    unsigned long long n;
+    unsigned char print_this, bflag;
+    char content = 0;
+
+    if(argc > 2)
+    {
+        bflag = 1;
+        if(!strcmp(argv[1], "-b"))
+            fp = fopen(argv[2], "r");
+        else
+            fp = fopen(argv[1], "r");
+    }
+    else
+    {
+        fp = fopen(argv[1], "r");
+    }
 
     if(!fp)
     {
@@ -95,54 +109,104 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    fseek(fp, 0, SEEK_END);
-    fl = ftell(fp);
-    fseek(fp, 0, SEEK_SET);
-
-    contents = malloc(fl);
-    converted_contents = calloc(fl<<1, 1);
-
-    for(n = 0; n < fl; n++)
+    if(bflag)
     {
-        contents[n] = fgetc(fp);
-    }
-    
-    fclose(fp);
+        printf("\n\n");
+        for(n = 0; content != EOF || n%8 != 7; n++)
+        {
+            if(n%8 == 0)
+            {
+                if(n != 0)
+                    printf(" ");
+                content = fgetc(fp);
+                print_this = content & 0x80;
+                print_this = print_this>>7;
+                print_this = itochar(print_this);
+            }
+            else if(n%8 == 1)
+            {
+                print_this = content & 0x40;
+                print_this = print_this>>6;
+                print_this = itochar(print_this);
+            }
+            else if(n%8 == 2)
+            {
+                print_this = content & 0x20;
+                print_this = print_this>>5;
+                print_this = itochar(print_this); 
+            }
+            else if(n%8 == 3)
+            {
+                print_this = content & 0x10;
+                print_this = print_this>>4;
+                print_this = itochar(print_this); 
+            }
+            else if(n%8 == 4)
+            {
+                print_this = content & 0x8;
+                print_this = print_this>>3;
+                print_this = itochar(print_this); 
+            }
+            else if(n%8 == 5)
+            {
+                print_this = content & 0x4;
+                print_this = print_this>>2;
+                print_this = itochar(print_this); 
+            }
+            else if(n%8 == 6)
+            {
+                print_this = content & 0x2;
+                print_this = print_this>>1;
+                print_this = itochar(print_this); 
+            }
+            else if(n%8 == 7)
+            {
+                print_this = content & 0x1;
+                print_this = itochar(print_this); 
+            }
+            if(n%64 == 0 && n != 0)
+                printf("\n");
+            printf("%c", print_this);
+        }
 
-    for(n = 0; n < fl<<1; n++)
+        print_this = content & 0x1;
+        print_this = itochar(print_this); 
+        printf("%c", print_this);
+        printf("\n\n");
+        fclose(fp);
+        return 0;
+    }
+
+    for(n = 0; content != EOF; n++)
     {
         if(n%2 == 0)
         {
-            converted_contents[n] = contents[n>>1] & 0xF0;
-            converted_contents[n] = converted_contents[n]>>4;
-
-            converted_contents[n] = itochar(converted_contents[n]);
+            content = fgetc(fp);
+            print_this = content & 0xF0;
+            print_this = print_this>>4;
+            print_this = itochar(print_this);
         }
         else
         {
-            converted_contents[n] = contents[n>>1] & 0xF;
-            
-            converted_contents[n] = itochar(converted_contents[n]);
-        }
-    }
-
-    free(contents);
-
-    for(n = 0; n < fl<<1; n++)
-    {
-        printf("%c", converted_contents[n]);
-        if(n % 16 == 0)
-        {
-            printf("\n");
+            print_this = content & 0xF;
+            print_this = itochar(print_this);
         }
 
-        if(n % 4 == 0)
+        if(n%4 == 0)
         {
             printf(" ");
+            if(n%32 == 0)
+            {
+                printf("\n");
+            }
         }
+        printf("%c", print_this);
     }
-
+    
+    print_this = content &0xF;
+    print_this = itochar(print_this);
+    printf("%c", print_this);
     printf("\n\n");
-   
-    free(converted_contents);
+
+    fclose(fp);
 }
