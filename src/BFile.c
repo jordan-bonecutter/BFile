@@ -92,11 +92,17 @@ int main(int argc, char *argv[])
 
     if(argc > 2)
     {
-        bflag = 1;
         if(!strcmp(argv[1], "-b"))
+        {
             fp = fopen(argv[2], "r");
+            bflag = 1;
+        }
         else
+        {
             fp = fopen(argv[1], "r");
+            if(!strcmp(argv[2], "-b"))
+                bflag = 1;
+        }
     }
     else
     {
