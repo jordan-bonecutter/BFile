@@ -78,6 +78,7 @@ char itochar(char i)
 
 int main(int argc, char *argv[])
 {
+	// If the arg count is too low
     if(argc < 2)
     {
         printf("\n%sUsage: ./BFile <filepath>%s\n\n", "\x1B[31m", "\x1B[0m");
@@ -86,63 +87,31 @@ int main(int argc, char *argv[])
 
     FILE *fp = fopen(argv[1], "r");
     unsigned long long fl, n;
-    char *contents = NULL;
-    unsigned char *converted_contents = NULL;
+    char c = 'A', ct = 0; 
 
+	// If the file doesn't exist
     if(!fp)
     {
        printf("\n%sError, file not found\n\n%s", "\x1B[31m", "\x1B[0m");
         return 1;
-    }
+   	}
 
-    fseek(fp, 0, SEEK_END);
-    fl = ftell(fp);
-    fseek(fp, 0, SEEK_SET);
-
-    contents = malloc(fl);
-    converted_contents = calloc(fl<<1, 1);
-
-    for(n = 0; n < fl; n++)
-    {
-        contents[n] = fgetc(fp);
-    }
+	while(c != EOF)
+	{
+		c = fgetc(fp);
+		printf("%c", itochar(c & 0x0F));
+		printf("%c", itochar(c>>4 & 0x0F));
+		ct += 2;
+		if(ct%4 == 0)
+		{
+			printf(" ");
+			if(ct % 32 == 0)
+			{
+				printf("\n");
+				ct = 0;
+			}
+		}
+	}
     
     fclose(fp);
-
-    for(n = 0; n < fl<<1; n++)
-    {
-        if(n%2 == 0)
-        {
-            converted_contents[n] = contents[n>>1] & 0xF0;
-            converted_contents[n] = converted_contents[n]>>4;
-
-            converted_contents[n] = itochar(converted_contents[n]);
-        }
-        else
-        {
-            converted_contents[n] = contents[n>>1] & 0xF;
-            
-            converted_contents[n] = itochar(converted_contents[n]);
-        }
-    }
-
-    free(contents);
-
-    for(n = 0; n < fl<<1; n++)
-    {
-        printf("%c", converted_contents[n]);
-        if(n % 16 == 0)
-        {
-            printf("\n");
-        }
-
-        if(n % 4 == 0)
-        {
-            printf(" ");
-        }
-    }
-
-    printf("\n\n");
-   
-    free(converted_contents);
 }
